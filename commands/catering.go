@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -14,7 +15,7 @@ type OrderFood struct {
 }
 
 // Validate command
-func (c *OrderFood) Validate() error {
+func (c OrderFood) Validate(ctx context.Context) error {
 	if c.Food == "" {
 		return errors.New("Food must not be empty")
 	}

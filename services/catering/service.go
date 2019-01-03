@@ -35,6 +35,14 @@ func (s *Service) On(ctx context.Context, event base.Event) error {
 
 // Apply command
 func (s *Service) Apply(ctx context.Context, command base.Command) error {
+	// this check should be done in the command bus
+	if c, ok := command.(base.ValidatedCommand); ok {
+		err := c.Validate(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
 	// pre-aggregate-apply-hook
 	switch c := command.(type) {
 	case commands.OrderFood:

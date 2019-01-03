@@ -63,6 +63,12 @@ func main() {
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "Pizza",
+		},
+		commands.OrderFood{
+			User:  "B",
+			Place: "X",
+			Date:  time.Now(),
+			Food:  "",
 		})
 
 	bus.Publish(ctx, events.OrderFrozen{
