@@ -37,6 +37,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
 
+// CorsMiddleware allows CORS-Requests
 func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// allow cross domain AJAX requests
