@@ -29,14 +29,14 @@ func newReadModel() *readModel {
 		UserBalance:   map[string]cents{},
 		Orders: []query.Order{
 			query.Order{
-				Date:  "asdf",
-				Food:  "Pommes",
+				Date:  "10. Nov",
+				Food:  "Standard",
 				Place: "X",
 				User:  "B",
 			},
 			query.Order{
-				Date:  "weff",
-				Food:  "Pommes",
+				Date:  "11. Nov",
+				Food:  "Vegetarisch",
 				Place: "X",
 				User:  "A",
 			}},
@@ -51,12 +51,28 @@ func (r *readModel) On(ctx context.Context, evt base.Event) error {
 	case event.OrderFrozen:
 		r.IsOrderFrozen[orderIDFrom(e.Place, e.Date)] = true
 	case event.FoodOrdered:
-		r.Orders = append(r.Orders, query.Order{
-			Date:  e.Date.String(),
-			Food:  e.Food,
-			Place: e.Place,
-			User:  e.User,
-		})
+		changed := false
+		for i, order := range r.Orders {
+			if order.Date == e.Date {
+				r.Orders[i].Food = e.Food
+				changed = true
+			}
+		}
+
+		if !changed {
+			r.Orders = append(r.Orders, query.Order{
+				Date:  e.Date,
+				Food:  e.Food,
+				Place: e.Place,
+				User:  e.User,
+			})
+		}
+	case event.FoodOrderCancelled:
+		for i, order := range r.Orders {
+			if order.Date == e.Date {
+				r.Orders[i].Food = ""
+			}
+		}
 	}
 
 	return nil

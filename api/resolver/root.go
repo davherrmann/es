@@ -38,14 +38,12 @@ func (r *Root) OrderFood(ctx context.Context, args *struct {
 	Date string
 	Food string
 }) (bool, error) {
-	log.Println("order food " + args.Date + " " + args.Food)
-	return true, nil
+	return true, r.Query.OrderFood(ctx, args.Date, args.Food)
 }
 
 // CancelFoodOrder mutation
 func (r *Root) CancelFoodOrder(ctx context.Context, args *struct {
 	Date string
 }) (bool, error) {
-	log.Println("cancel food order " + args.Date)
-	return true, nil
+	return true, r.Query.CancelFoodOrder(ctx, args.Date)
 }

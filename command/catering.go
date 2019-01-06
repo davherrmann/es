@@ -3,15 +3,21 @@ package command
 import (
 	"context"
 	"errors"
-	"time"
 )
 
 // OrderFood command
 type OrderFood struct {
 	User  string
 	Place string
-	Date  time.Time
+	Date  string
 	Food  string
+}
+
+// CancelFoodOrder command
+type CancelFoodOrder struct {
+	Place string
+	Date  string
+	User  string
 }
 
 // Validate command

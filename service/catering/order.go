@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/davherrmann/es/base"
 	"github.com/davherrmann/es/command"
@@ -44,12 +43,18 @@ func (a *Order) Apply(ctx context.Context, cmd base.Command) ([]base.Event, erro
 			Date:  c.Date,
 			Food:  c.Food,
 		}}, nil
+	case command.CancelFoodOrder:
+		return []base.Event{event.FoodOrderCancelled{
+			User:  c.User,
+			Place: c.Place,
+			Date:  c.Date,
+		}}, nil
 	}
 
 	return base.NoEvents()
 }
 
 // helpers
-func orderIDFrom(place string, date time.Time) string {
-	return fmt.Sprintf("%s-%02d-%02d-%02d", place, date.Year(), date.Month(), date.Day())
+func orderIDFrom(place string, date string) string {
+	return fmt.Sprintf("%s-%s", place, date)
 }
