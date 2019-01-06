@@ -21,7 +21,7 @@ func (r *Catering) Orders(ctx context.Context) []resolver.Order {
 	orders := []resolver.Order{}
 
 	for _, order := range res {
-		orders = append(orders, resolver.Order{order})
+		orders = append(orders, resolver.Order{Order: order})
 	}
 
 	return orders
