@@ -1,4 +1,4 @@
-package events
+package event
 
 // MoneyTransferred event
 type MoneyTransferred struct {

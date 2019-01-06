@@ -1,14 +1,17 @@
 package main
 
 import (
-	"context"
+	"io/ioutil"
 	"log"
-	"time"
+	"net/http"
+	"os"
 
+	"github.com/davherrmann/es/api"
+	"github.com/davherrmann/es/api/resolver"
 	"github.com/davherrmann/es/base"
-	"github.com/davherrmann/es/commands"
-	"github.com/davherrmann/es/events"
-	"github.com/davherrmann/es/services/catering"
+	"github.com/davherrmann/es/service"
+	graphql "github.com/graph-gophers/graphql-go"
+	"github.com/graph-gophers/graphql-go/relay"
 	_ "github.com/lib/pq"
 )
 
@@ -21,75 +24,100 @@ func check(err error) {
 func main() {
 	bus := base.NewBus()
 
+	s, err := ioutil.ReadFile("schema.gql")
+	if err != nil {
+		log.Fatal("error reading graphql schema: " + err.Error())
+	}
+
+	schema := graphql.MustParseSchema(string(s), &resolver.Root{
+		Query: service.New(bus),
+	})
+	http.Handle("/graphql", CorsMiddleware(&relay.Handler{Schema: schema}))
+	http.HandleFunc("/", api.GraphiQL)
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
+}
+
+func CorsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// allow cross domain AJAX requests
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		next.ServeHTTP(w, r)
+	})
+}
+
+/*
+	bus := base.NewBus()
+
 	ctx := context.Background()
 	catering := catering.NewService(bus)
 
-	apply := func(commands ...base.Command) {
-		for _, command := range commands {
+	apply := func(command ...base.Command) {
+		for _, command := range command {
 			err := catering.Apply(ctx, command)
 			check(err)
 		}
 	}
 
 	apply(
-		commands.OrderFood{
+		command.OrderFood{
 			User:  "A",
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "Pommes",
 		},
-		commands.OrderFood{
+		command.OrderFood{
 			User:  "B",
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "Pizza",
 		})
 
-	bus.Publish(ctx, events.MoneyTransferred{
+	bus.Publish(ctx, event.MoneyTransferred{
 		From:   "A",
 		To:     "B",
 		Amount: 100,
 	})
 
 	apply(
-		commands.OrderFood{
+		command.OrderFood{
 			User:  "A",
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "Pommes",
 		},
-		commands.OrderFood{
+		command.OrderFood{
 			User:  "B",
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "Pizza",
 		},
-		commands.OrderFood{
+		command.OrderFood{
 			User:  "B",
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "",
 		})
 
-	bus.Publish(ctx, events.OrderFrozen{
+	bus.Publish(ctx, event.OrderFrozen{
 		Date:  time.Now(),
 		Place: "X",
 	})
 
 	apply(
-		commands.OrderFood{
+		command.OrderFood{
 			User:  "A",
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "Ich habe nachträglich was geändert...",
 		},
-		commands.OrderFood{
+		command.OrderFood{
 			User:  "B",
 			Place: "X",
 			Date:  time.Now(),
 			Food:  "Ich habe nachträglich noch was geändert...",
 		})
-}
+*/
 
 /*
 	log.Println("Hello World!! ")
@@ -102,7 +130,7 @@ func main() {
 		log.Fatal("error connecting to the database: ", err)
 	}
 
-	rows, err := db.Query("SELECT stream, type FROM events")
+	rows, err := db.Query("SELECT stream, type FROM event")
 	if err != nil {
 		log.Fatal(err)
 	}

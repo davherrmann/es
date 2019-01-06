@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/davherrmann/es/base"
-	"github.com/davherrmann/es/commands"
+	"github.com/davherrmann/es/command"
 )
 
 // Service for catering
@@ -34,9 +34,9 @@ func (s *Service) On(ctx context.Context, event base.Event) error {
 }
 
 // Apply command
-func (s *Service) Apply(ctx context.Context, command base.Command) error {
+func (s *Service) Apply(ctx context.Context, cmd base.Command) error {
 	// this check should be done in the command bus
-	if c, ok := command.(base.ValidatedCommand); ok {
+	if c, ok := cmd.(base.ValidatedCommand); ok {
 		err := c.Validate(ctx)
 		if err != nil {
 			return err
@@ -44,8 +44,8 @@ func (s *Service) Apply(ctx context.Context, command base.Command) error {
 	}
 
 	// pre-aggregate-apply-hook
-	switch c := command.(type) {
-	case commands.OrderFood:
+	switch c := cmd.(type) {
+	case command.OrderFood:
 		// check if user has enough money (eventually consistent via projection view)
 		// check if user can order for user/tenant in command
 

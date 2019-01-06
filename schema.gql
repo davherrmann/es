@@ -1,0 +1,15 @@
+type Order {
+  place: String!
+  date: String!
+  user: String!
+  food: String!
+}
+
+type Query {
+  hello: String!
+  orders: [Order!]!
+}
+
+schema {
+  query: Query
+}
