@@ -2,7 +2,6 @@ package catering
 
 import (
 	"context"
-	"log"
 
 	"github.com/davherrmann/es/api/catering"
 	"github.com/davherrmann/es/base"
@@ -38,6 +37,5 @@ func (r *Catering) CancelFoodOrder(ctx context.Context, command catering.DoCance
 }
 
 func (r *Catering) publish(ctx context.Context, command base.Command) (bool, error) {
-	log.Printf("publishing %#v", command)
 	return true, r.Service.Apply(ctx, command)
 }
