@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/davherrmann/es/api"
-	"github.com/davherrmann/es/api/resolver"
 	"github.com/davherrmann/es/base"
-	"github.com/davherrmann/es/service"
-	graphql "github.com/graph-gophers/graphql-go"
+	"github.com/davherrmann/es/graphql"
+	"github.com/davherrmann/es/service/catering"
+	gql "github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
 	_ "github.com/lib/pq"
 )
@@ -29,11 +28,11 @@ func main() {
 		log.Fatal("error reading graphql schema: " + err.Error())
 	}
 
-	schema := graphql.MustParseSchema(string(s), &resolver.Root{
-		Query: service.New(bus),
+	schema := gql.MustParseSchema(string(s), &graphql.Root{
+		Catering: catering.Catering{Service: *catering.NewService(bus)},
 	})
 	http.Handle("/graphql", CorsMiddleware(&relay.Handler{Schema: schema}))
-	http.HandleFunc("/", api.GraphiQL)
+	http.HandleFunc("/", graphql.GraphiQL)
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/davherrmann/es/api/catering"
 	"github.com/davherrmann/es/base"
-	"github.com/davherrmann/es/command"
 )
 
 // Service for catering
@@ -45,7 +45,7 @@ func (s *Service) Apply(ctx context.Context, cmd base.Command) error {
 
 	// pre-aggregate-apply-hook
 	switch c := cmd.(type) {
-	case command.OrderFood:
+	case catering.DoOrderFood:
 		// check if user has enough money (eventually consistent via projection view)
 		// check if user can order for user/tenant in command
 
@@ -66,7 +66,7 @@ func (s *Service) Apply(ctx context.Context, cmd base.Command) error {
 		}
 
 		return s.orders.Apply(ctx, orderID, c)
-	case command.CancelFoodOrder:
+	case catering.DoCancelFoodOrder:
 		orderID := orderIDFrom(c.Place, c.Date)
 
 		if s.readModel.IsOrderFrozen[orderID] {

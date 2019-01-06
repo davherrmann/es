@@ -3,9 +3,10 @@ package catering
 import (
 	"context"
 
+	"github.com/davherrmann/es/api/catering"
+	"github.com/davherrmann/es/api/payment"
 	"github.com/davherrmann/es/base"
-	"github.com/davherrmann/es/event"
-	"github.com/davherrmann/es/query"
+	"github.com/davherrmann/es/service/catering/schema"
 )
 
 // TODO do and done instead of event and command?
@@ -20,21 +21,21 @@ type readModel struct {
 	// on rehydration it should only be filled with orders that are not in the past
 	IsOrderFrozen map[string]bool  // order id -> frozen?
 	UserBalance   map[string]cents // user id -> balance
-	Orders        []query.Order
+	Orders        []schema.Order
 }
 
 func newReadModel() *readModel {
 	return &readModel{
 		IsOrderFrozen: map[string]bool{},
 		UserBalance:   map[string]cents{},
-		Orders: []query.Order{
-			query.Order{
+		Orders: []schema.Order{
+			schema.Order{
 				Date:  "10. Nov",
 				Food:  "Standard",
 				Place: "X",
 				User:  "B",
 			},
-			query.Order{
+			schema.Order{
 				Date:  "11. Nov",
 				Food:  "Vegetarisch",
 				Place: "X",
@@ -45,12 +46,12 @@ func newReadModel() *readModel {
 
 func (r *readModel) On(ctx context.Context, evt base.Event) error {
 	switch e := evt.(type) {
-	case event.MoneyTransferred:
+	case payment.MoneyTransferred:
 		r.UserBalance[e.From] -= e.Amount
 		r.UserBalance[e.To] += e.Amount
-	case event.OrderFrozen:
+	case catering.OrderFrozen:
 		r.IsOrderFrozen[orderIDFrom(e.Place, e.Date)] = true
-	case event.FoodOrdered:
+	case catering.FoodOrdered:
 		changed := false
 		for i, order := range r.Orders {
 			if order.Date == e.Date {
@@ -60,14 +61,14 @@ func (r *readModel) On(ctx context.Context, evt base.Event) error {
 		}
 
 		if !changed {
-			r.Orders = append(r.Orders, query.Order{
+			r.Orders = append(r.Orders, schema.Order{
 				Date:  e.Date,
 				Food:  e.Food,
 				Place: e.Place,
 				User:  e.User,
 			})
 		}
-	case event.FoodOrderCancelled:
+	case catering.FoodOrderCancelled:
 		for i, order := range r.Orders {
 			if order.Date == e.Date {
 				r.Orders[i].Food = ""

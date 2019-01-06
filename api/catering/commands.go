@@ -1,27 +1,27 @@
-package command
+package catering
 
 import (
 	"context"
 	"errors"
 )
 
-// OrderFood command
-type OrderFood struct {
+// DoOrderFood command
+type DoOrderFood struct {
 	User  string
 	Place string
 	Date  string
 	Food  string
 }
 
-// CancelFoodOrder command
-type CancelFoodOrder struct {
+// DoCancelFoodOrder command
+type DoCancelFoodOrder struct {
 	Place string
 	Date  string
 	User  string
 }
 
 // Validate command
-func (c OrderFood) Validate(ctx context.Context) error {
+func (c DoOrderFood) Validate(ctx context.Context) error {
 	if c.Food == "" {
 		return errors.New("food must not be empty")
 	}

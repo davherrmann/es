@@ -5,21 +5,20 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/davherrmann/es/api/catering"
 	"github.com/davherrmann/es/base"
-	"github.com/davherrmann/es/command"
-	"github.com/davherrmann/es/event"
 )
 
 // Order aggregate
 type Order struct {
 	OrderCount int
-	Orders     map[string]*event.FoodOrdered // user -> event
+	Orders     map[string]catering.FoodOrdered // user -> event
 }
 
 // On rehydrates the aggregate
 func (a *Order) On(ctx context.Context, evt base.Event) error {
 	switch e := evt.(type) {
-	case *event.FoodOrdered:
+	case catering.FoodOrdered:
 		a.Orders[e.User] = e
 		a.OrderCount++
 	}
@@ -32,19 +31,19 @@ func (a *Order) On(ctx context.Context, evt base.Event) error {
 // Input validation should be done in command.Validate()
 func (a *Order) Apply(ctx context.Context, cmd base.Command) ([]base.Event, error) {
 	switch c := cmd.(type) {
-	case command.OrderFood:
+	case catering.DoOrderFood:
 		if a.OrderCount > 10 {
 			return nil, errors.New("order limit reached (10), can't add order")
 		}
 
-		return []base.Event{event.FoodOrdered{
+		return []base.Event{catering.FoodOrdered{
 			User:  c.User,
 			Place: c.Place,
 			Date:  c.Date,
 			Food:  c.Food,
 		}}, nil
-	case command.CancelFoodOrder:
-		return []base.Event{event.FoodOrderCancelled{
+	case catering.DoCancelFoodOrder:
+		return []base.Event{catering.FoodOrderCancelled{
 			User:  c.User,
 			Place: c.Place,
 			Date:  c.Date,

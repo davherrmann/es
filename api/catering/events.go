@@ -1,4 +1,4 @@
-package event
+package catering
 
 // FoodOrdered event
 type FoodOrdered struct {
