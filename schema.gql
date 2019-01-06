@@ -10,6 +10,12 @@ type Query {
   orders: [Order!]!
 }
 
+type Mutation {
+  orderFood(date: String!, food: String!): Boolean!
+  cancelFoodOrder(date: String!): Boolean!
+}
+
 schema {
   query: Query
+  mutation: Mutation
 }
